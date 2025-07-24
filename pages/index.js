@@ -10,6 +10,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
+// import { deleteTaskAsync } from '../redux/taskSlice';
 import { 
   fetchTasks, 
   addTaskAsync, 
@@ -28,7 +29,10 @@ export default function Home({ initialTasks }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
   const [showError, setShowError] = useState(false);
-  const [hasHydrated, setHasHydrated] = useState(false);
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+const [taskToDelete, setTaskToDelete] = useState(null);
+
 
   const {
     register,
@@ -58,37 +62,6 @@ export default function Home({ initialTasks }) {
     return matchesSearch && matchesPriority;
   });
 
-  // const onSubmit = async (data) => {
-  //   if (editMode) {
-  //     await dispatch(updateTaskAsync({ 
-  //       id: currentTaskId, 
-  //       taskData: { ...data, id: currentTaskId } 
-  //     }));
-  //   } else {
-  //     await dispatch(addTaskAsync({ ...data, status: "incomplete" }));
-  //   }
-    
-  //   reset();
-  //   setShowForm(false);
-  //   setEditMode(false);
-  //   setCurrentTaskId(null);
-  // };
-
-  // const handleDelete = async (id) => {
-  //   if (window.confirm('Are you sure you want to delete this task?')) {
-  //     await dispatch(deleteTaskAsync(id));
-  //   }
-  // };
-
-  // const handleEdit = (task) => {
-  //   setEditMode(true);
-  //   setShowForm(true);
-  //   setCurrentTaskId(task.id);
-  //   setValue("title", task.title);
-  //   setValue("description", task.description || "");
-  //   setValue("priority", task.priority);
-  //   setValue("dueDate", task.dueDate ? task.dueDate.substring(0, 10) : "");
-  // };
 const handleEdit = (task) => {
   setEditMode(true);
   setShowForm(true);
@@ -100,36 +73,29 @@ const handleEdit = (task) => {
   setValue("dueDate", task.dueDate ? task.dueDate.substring(0, 10) : "");
 };
 
-const handleDelete = async (id) => {
-  if (window.confirm('Are you sure you want to delete this task?')) {
-    try {
-      await dispatch(deleteTaskAsync(id));
-    } catch (error) {
-      console.error('Delete failed:', error);
-    }
+
+const handleDeleteClick = (id) => {
+  setTaskToDelete(id);
+  setDeleteDialogOpen(true);
+};
+
+const confirmDelete = async () => {
+  try {
+    await dispatch(deleteTaskAsync(taskToDelete));
+  } catch (error) {
+    console.error("Delete failed:", error);
+  } finally {
+    setDeleteDialogOpen(false);
+    setTaskToDelete(null);
   }
 };
 
-// const onSubmit = async (data) => {
-//   try {
-//     if (editMode) {
-//       await dispatch(updateTaskAsync({ 
-//         id: currentTaskId, 
-//         taskData: data 
-//       }));
-//       console.log('Submitting update for task ID:', currentTaskId, 'with data:', data);
-//     } else {
-//       await dispatch(addTaskAsync({ ...data,id: Date.now(), status: "incomplete" }));
-//     }
-    
-//     reset();
-//     setShowForm(false);
-//     setEditMode(false);
-//     setCurrentTaskId(null);
-//   } catch (error) {
-//     console.error('Submit failed:', error);
-//   }
-// };
+const cancelDelete = () => {
+  setDeleteDialogOpen(false);
+  setTaskToDelete(null);
+};
+
+
 const onSubmit = async (data) => {
   try {
     if (editMode) {
@@ -395,21 +361,22 @@ const onSubmit = async (data) => {
                       </Button>
 
                       <Button
-                        onClick={() => handleDelete(task.id)}
-                        variant="contained"
+                        onClick={() => handleDeleteClick(task.id)}
+                         variant="contained"
                         color="error"
                         disabled={loading}
-                        sx={{
-                          background: "linear-gradient(135deg, #f44336, rgb(24, 24, 24))",
-                          minWidth: '60px',
-                          px: 1.5,
-                          py: 1,
-                          borderRadius: 1,
-                          ml: 1,
-                        }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </Button>
+                     sx={{
+                       background: "linear-gradient(135deg, #f44336, rgb(24, 24, 24))",
+                       minWidth: '60px',
+                       px: 1.5,
+                       py: 1,
+                       borderRadius: 1,
+                       ml: 1,
+                       }}
+                         >
+                     <DeleteIcon fontSize="small" />
+                     </Button>
+
                     </>
                   }
                 >
@@ -428,7 +395,23 @@ const onSubmit = async (data) => {
           )}
         </List>
       </Paper>
+       {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={cancelDelete}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this task?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelDelete} variant="outlined" sx={{mb:2}}>
+            Cancel
+          </Button>
+          <Button onClick={confirmDelete} variant="contained" color="error" sx={{ background: "linear-gradient(135deg, #f44336, rgb(24, 24, 24))" ,mr: 2 ,mb:2}}>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
+    
   );
 }
 

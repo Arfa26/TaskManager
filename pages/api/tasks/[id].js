@@ -20,30 +20,6 @@ export default function handler(req, res) {
     }
   }
 
-//    if (req.method === "PUT") {
-//   try {
-//     console.log('PUT request body:', req.body);
-//     console.log('PUT request ID:', id);
- 
-//     const taskDataWithId = {
-//       ...req.body,
-//       id: id  
-//     };
-    
-//     console.log('Task data with ID:', taskDataWithId);
-    
-//     const updatedTask = updateTask(id, taskDataWithId);
-//     console.log('Task updated successfully:', updatedTask);
-    
-//     return res.status(200).json(updatedTask);
-//   } catch (error) {
-//     console.error('Error in PUT /api/tasks/[id]:', error);
-//     if (error.message === 'Task not found') {
-//       return res.status(404).json({ message: 'Task not found' });
-//     }
-//     return res.status(500).json({ message: 'Internal server error' });
-//   }
-// }
 if (req.method === "PUT") {
   try {
     console.log('PUT request body:', req.body);

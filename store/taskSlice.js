@@ -87,7 +87,6 @@ export const updateTaskAsync = createAsyncThunk(
   }
 );
 
-// Delete task - COMPLETELY FIXED
 export const deleteTaskAsync = createAsyncThunk(
   'tasks/deleteTask',
   async (id, { rejectWithValue }) => {

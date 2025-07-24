@@ -19,38 +19,15 @@ const defaultTasks = [
   },
 ];
 
-// Global in-memory task cache
-//let tasks = [];
 let tasks = global.tasksStore || [...defaultTasks];
 global.tasksStore = tasks;
-// let tasks = loadTasksFromStorage();
-function loadTasksFromStorage() {
-  if (typeof window === 'undefined') {
-    return [...defaultTasks];
-  }
 
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    } else {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultTasks));
-      return [...defaultTasks];
-    }
-  } catch (error) {
-    console.error('Error loading tasks:', error);
-    return [...defaultTasks];
-  }
+function loadTasksFromStorage() {
+  return global.tasksStore || [...defaultTasks];
 }
 
 function saveTasksToStorage(tasksToSave) {
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasksToSave));
-    } catch (error) {
-      console.error('Error saving tasks:', error);
-    }
-  }
+  global.tasksStore = tasksToSave;
 }
 
 export function getTasks() {
@@ -82,28 +59,29 @@ export function addTask(task) {
   return newTask;
 }
 
+// --- Update existing task ---
 export function updateTask(id, updatedData) {
   const tasks = loadTasksFromStorage();
-  console.log("All Tasks:", tasks);
-  console.log("Update Request ID:", id);
 
   const index = tasks.findIndex(task => String(task.id) === String(id));
-
-  if (index !== -1) {
-    tasks[index] = {
-      ...tasks[index],
-      ...updatedData,
-      id: tasks[index].id,
-      updatedAt: new Date().toISOString()
-    };
-    saveTasksToStorage(tasks);
-    return tasks[index];
+  if (index === -1) {
+    console.error(" Task not found for ID:", id);
+    throw new Error("Task not found");
   }
 
-  throw new Error('Task not found');
+  const updatedTask = {
+    ...tasks[index],
+    ...updatedData,
+    id: tasks[index].id, // Keep original ID
+    updatedAt: new Date().toISOString(),
+  };
+
+  tasks[index] = updatedTask;
+  saveTasksToStorage(tasks);
+  return updatedTask;
 }
 
-
+// --- Delete task by ID ---
 export function deleteTask(id) {
   const tasks = loadTasksFromStorage();
   const index = tasks.findIndex(task => String(task.id) === String(id));
