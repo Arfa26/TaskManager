@@ -1,15 +1,4 @@
-// // pages/_app.js
-// import '@/styles/globals.css';
-// import { Provider } from 'react-redux';
-// import store from '@/store/store'; // adjust if your path is different
 
-// export default function App({ Component, pageProps }) {
-//   return (
-//     <Provider store={store}>
-//       <Component {...pageProps} />
-//     </Provider>
-//   );
-// }
 import '@/styles/globals.css';
 import { Provider } from 'react-redux';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
