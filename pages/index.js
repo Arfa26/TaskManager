@@ -10,7 +10,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
-// import { deleteTaskAsync } from '../redux/taskSlice';
 import { 
   fetchTasks, 
   addTaskAsync, 
@@ -18,6 +17,8 @@ import {
   updateTaskAsync,
   clearError 
 } from "../store/taskSlice";
+
+
 
 export default function Home({ initialTasks }) {
   const dispatch = useDispatch();
@@ -32,6 +33,13 @@ export default function Home({ initialTasks }) {
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 const [taskToDelete, setTaskToDelete] = useState(null);
+const statuses = [
+  { key: "todo", label: "To Do" },
+  { key: "approved", label: "Approved" },
+  { key: "review", label: "In Review" },
+  { key: "draft", label: "Drafting" },
+  { key: "done", label: "Done" },
+];
 
 
   const {
@@ -61,12 +69,12 @@ const [taskToDelete, setTaskToDelete] = useState(null);
     const matchesPriority = priorityFilter === "" || task.priority === priorityFilter;
     return matchesSearch && matchesPriority;
   });
-
+// const tasksForStatus = filteredTasks.filter((task) => task.status === key);
 const handleEdit = (task) => {
   setEditMode(true);
   setShowForm(true);
   setCurrentTaskId(task.id); 
-  setValue("id", task.id); // Set ID for update
+  setValue("id", task.id); 
   setValue("title", task.title);
   setValue("description", task.description || "");
   setValue("priority", task.priority);
@@ -101,12 +109,12 @@ const onSubmit = async (data) => {
     if (editMode) {
       await dispatch(updateTaskAsync({ 
         id: currentTaskId, 
-        taskData: { ...data, id: currentTaskId }  // Ensure ID is passed
+        taskData: { ...data, id: currentTaskId } 
       }));
       console.log('Updated task:', { ...data, id: currentTaskId });
     } else {
       const newId = Date.now();
-      await dispatch(addTaskAsync({ ...data, id: newId, status: "incomplete" }));
+      await dispatch(addTaskAsync({ ...data, id: newId}));
       console.log('Added new task:', { ...data, id: newId, status: "incomplete" });
     }
 
@@ -125,7 +133,7 @@ const onSubmit = async (data) => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 6 }}>
+    <Container maxWidth="xl" sx={{ backgroundColor:'rgba(236, 236, 236, 0.3)'}}>
       {/* Error Snackbar */}
       <Snackbar 
         open={showError} 
@@ -138,26 +146,27 @@ const onSubmit = async (data) => {
         </Alert>
       </Snackbar>
 
-      <Paper
-        elevation={5}
-        sx={{
-          p: 4,
-          borderRadius: 3,
-          mb: 4,
-        }}
-      >
-        <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h4" fontWeight="bold" gutterBottom color="rgb(186, 139, 2)"
-            sx={{fontFamily: "'Manrope', sans-serif"}}>
+    
+      <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2,pt:4 }}>
+          <Box display={'flex'}>
+          <img
+            src="/ch.png"
+            alt="Task Manager Logo"
+            style={{ width: 60, height: 60, marginRight: 20 }}
+          />
+          <Typography variant="h4" fontWeight="bold" gutterBottom color="rgb(24, 24, 24)"
+            sx={{ fontFamily: "'Montserrat', sans-serif", fontSize: '2.6rem', letterSpacing: '0.05em' }}
+            >
             TASK MANAGER
           </Typography>
+          </Box>
           <Box sx={{display: 'flex', gap:3, alignItems: 'center', mb: 2 }}>
             <TextField
               placeholder="Search tasks..."
               variant="outlined"
               size="small"
-              sx={{ minWidth: 200 ,'& .MuiOutlinedInput-root': {
-                borderRadius: '20px',
+              sx={{ minWidth: 300 ,'& .MuiOutlinedInput-root': {
+                borderRadius: '20px',border: '1px solid rgb(24, 24, 24)',
               }}}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -169,7 +178,7 @@ const onSubmit = async (data) => {
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
               sx={{ minWidth: 150, '& .MuiOutlinedInput-root': {
-                borderRadius: '20px',
+                borderRadius: '20px',border: '1px solid rgb(24, 24, 24)',
               }}}
             >
               <MenuItem value="">All Priorities</MenuItem>
@@ -179,7 +188,7 @@ const onSubmit = async (data) => {
             </TextField>
             <Button
               variant="contained"
-              sx={{background: "linear-gradient(135deg, rgb(186, 139, 2), rgb(24, 24, 24))"}}
+              sx={{p:2,fontSize:16,fontFamily: 'Montserrat, sans-serif',borderRadius:4,fontWeight:'bold',background: "linear-gradient(135deg, #f44336, rgb(24, 24, 24))"}}
               onClick={() => {
                 setShowForm(true);
                 setEditMode(false);
@@ -191,11 +200,11 @@ const onSubmit = async (data) => {
             </Button>
           </Box>
         </Box>
-        <Divider sx={{ mb: 3 }} />
+        {/* <Divider sx={{ mb: 3 }} /> */}
 
         {/* Task Form Dialog */}
         <Dialog open={showForm} onClose={() => setShowForm(false)} fullWidth maxWidth="sm">
-          <DialogTitle sx={{fontWeight:'bold', color:'rgb(186, 139, 2)'}}>
+          <DialogTitle sx={{fontWeight:'bold', color:'rgb(24, 24, 24)'}}>
             {editMode ? "Update Task" : "Add New Task"}
           </DialogTitle>
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -266,19 +275,51 @@ const onSubmit = async (data) => {
                     }}}
                   />
                 </Grid>
+                <TextField
+  label="Status *"
+  select
+  fullWidth
+  size="small"
+  defaultValue=""
+  {...register("status", { required: "Status is required" })}
+  error={!!errors.status}
+  helperText={errors.status?.message}
+  sx={{
+    minWidth: 265,
+    '& .MuiOutlinedInput-root': {
+      borderRadius: '10px',
+    },
+  }}
+>
+  {[
+    { value: "todo", label: "To Do" },
+    { value: "approved", label: "Approved" },
+    { value: "review", label: "In Review" },
+    { value: "draft", label: "Drafting" },
+    { value: "done", label: "Done" },
+  ].map(({ value, label }) => (
+    <MenuItem key={value} value={value}>
+      {label}
+    </MenuItem>
+  ))}
+</TextField>
+
+                
               </Grid>
+              
             </DialogContent>
             <DialogActions sx={{marginRight: 2, marginBottom: 2}}>
               <Button 
                 onClick={() => setShowForm(false)}
                 disabled={loading}
                 sx={{
-                  border: "1px solid rgb(186, 139, 2)",
-                  color: "rgb(186, 139, 2)",
+                  border: "1px solid rgb(24, 24, 24)",
+                  color: "rgb(24, 24, 24)",
                   borderRadius: 2,
                   ":hover": {
                     color: "#fff",
-                    background: "linear-gradient(135deg, rgb(186, 139, 2), rgb(24, 24, 24))",
+                    border:'none',
+                    background: "linear-gradient(135deg, #f44336, rgb(24, 24, 24))",
                   },
                 }}
               >
@@ -289,7 +330,7 @@ const onSubmit = async (data) => {
                 variant="contained" 
                 disabled={loading}
                 sx={{
-                  background: "linear-gradient(135deg, rgb(186, 139, 2), rgb(24, 24, 24))",
+                  background: "linear-gradient(135deg, #f44336, rgb(24, 24, 24))",
                   color: "#fff",
                   fontWeight: 500,
                   borderRadius: 2,
@@ -310,91 +351,131 @@ const onSubmit = async (data) => {
         )}
 
         {/* Task List */}
-        <List sx={{ mt: 2 }}>
-          {filteredTasks.length === 0 && !loading ? (
-            <Paper sx={{ p: 4, textAlign: 'center' }}>
-              <Typography variant="h6" color="textSecondary">
-                {searchQuery || priorityFilter ? 'No tasks match your filters' : 'No tasks yet. Add your first task!'}
-              </Typography>
-            </Paper>
-          ) : (
-            filteredTasks.map((task) => (
-              <Paper
-                key={task.id}
-                elevation={3}
-                sx={{
-                  mb: 2,
-                  p: 2.5,
-                  borderRadius: 2,
-                  backgroundColor: "#fff",
-                  transition: "0.3s",
-                  borderLeft: `6px solid ${
-                    task.priority === 'High' ? '#f44336' :
-                    task.priority === 'Medium' ? '#ff9800' : '#4caf50'
-                  }`,
-                  "&:hover": {
-                    boxShadow: 6,
-                    transform: "scale(1.01)",
-                  },
-                }}
-              >
-                <ListItem
-                  disableGutters
-                  secondaryAction={
-                    <>
-                      <Button
-                        onClick={() => handleEdit(task)}
-                        variant="contained"
-                        disabled={loading}
-                        sx={{
-                          minWidth: '60px',
-                          px: 1.5,
-                          py: 1,
-                          borderRadius: 1,
-                          background: "linear-gradient(135deg, rgb(186, 139, 2), rgb(24, 24, 24))",
-                          '&:hover': {
-                            backgroundColor: '#bbdefb',
-                          }
-                        }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </Button>
+      
 
-                      <Button
-                        onClick={() => handleDeleteClick(task.id)}
-                         variant="contained"
-                        color="error"
-                        disabled={loading}
-                     sx={{
-                       background: "linear-gradient(135deg, #f44336, rgb(24, 24, 24))",
-                       minWidth: '60px',
-                       px: 1.5,
-                       py: 1,
-                       borderRadius: 1,
-                       ml: 1,
-                       }}
-                         >
-                     <DeleteIcon fontSize="small" />
-                     </Button>
+<Box
+  display="flex"
+  flexWrap="wrap"
+  justifyContent="start"
+  gap={2}
+  mb={6}
+>
+{statuses.map(({ key, label }) => {
+  const tasksForStatus = filteredTasks.filter((task) => task.status === key);
 
-                    </>
-                  }
-                >
-                  <Box>
-                    <Typography variant="h6">{task.title}</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {task.description || "No description"}
-                    </Typography>
-                    <Typography variant="body2" fontWeight="bold" color="secondary.main">
-                      Priority: {task.priority} | Due: {task.dueDate?.substring(0, 10)}
-                    </Typography>
-                  </Box>
-                </ListItem>
-              </Paper>
-            ))
-          )}
-        </List>
-      </Paper>
+  return (
+    <Box
+      key={key}
+      sx={{
+        flex: '1 1 25%',
+        maxWidth: '50%',
+        minWidth: {
+          xs: '100%',
+          sm: '48%',
+          md: '31%',
+          lg: '23%',
+          xl: '19%',
+        },
+        backgroundColor: 'rgba(212, 212, 212, 0.2)',
+        borderRadius: 3,
+        p: 2,
+        minHeight: 350,
+        boxSizing: 'border-box',
+      }}
+    >
+      {/* Header */}
+      <Box
+        sx={{
+          borderBottom: '1.5px solid rgb(24, 24, 24)',
+          paddingBottom: '8px',
+          marginBottom: '12px',
+        }}
+      >
+        <Box 
+  display="flex" 
+  justifyContent="space-between" 
+  alignItems="center"
+>
+  <Typography
+    variant="h6"
+    sx={{
+      color: 'rgb(24, 24, 24)',
+      fontFamily: 'Montserrat, sans-serif',
+      fontWeight: 600,
+    }}
+  >
+    {label}
+  </Typography>
+
+  <Box
+    sx={{
+      background: "linear-gradient(135deg, #f44336, rgb(24, 24, 24))",
+      color: '#fff',
+      fontWeight: 'bold',
+      borderRadius: '50%',
+      width: 26,
+      height: 26,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '0.85rem',
+    }}
+  >
+    {tasksForStatus.length}
+  </Box>
+</Box>
+
+      </Box>
+
+      {/* Tasks or empty message */}
+      {tasksForStatus.length === 0 ? (
+        <Box sx={{ textAlign: 'center', mt: 15, color: 'gray', fontStyle: 'italic' }}>
+          No tasks
+        </Box>
+      ) : (
+        tasksForStatus.map((task) => (
+          <Paper
+            key={task.id}
+            elevation={2}
+            sx={{
+              mb: 1.5,
+              p: 1.5,
+              borderRadius: 2,
+              backgroundColor: "#fff",
+              borderLeft: `6px solid ${
+                task.priority === 'High' ? '#f44336' :
+                task.priority === 'Medium' ? '#ff9800' : '#4caf50'
+              }`,
+            }}
+          >
+            <Typography variant="subtitle1" fontWeight="bold">
+              {task.title}
+            </Typography>
+            <Typography variant="body2">{task.description}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              Due: {task.dueDate?.substring(0, 10)}
+            </Typography>
+
+            <Box sx={{ mt: 1, gap:1,display: 'flex', justifyContent:"right" }}>
+              <IconButton onClick={() => handleEdit(task)} size="small" sx={{background: "linear-gradient(135deg, #f44336, rgb(24, 24, 24))", color: "#fff"}}>
+                <EditIcon fontSize="small" />
+              </IconButton>
+              <IconButton onClick={() => handleDeleteClick(task.id)} size="small"sx={{background: "linear-gradient(135deg, #f44336, rgb(24, 24, 24))", color: "#fff"}}>
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </Paper>
+        ))
+      )}
+    </Box>
+  );
+})}
+
+</Box>
+
+
+
+      {/* </Paper> */}
        {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={cancelDelete}>
         <DialogTitle>Confirm Delete</DialogTitle>

@@ -7,7 +7,7 @@ const defaultTasks = [
     description: "Write and finalize the project proposal for Q1",
     priority: "High",
     dueDate: "2025-08-15",
-    status: "incomplete"
+    status: "drafting"
   },
   {
     id: 2,
@@ -15,7 +15,7 @@ const defaultTasks = [
     description: "Review pull requests from team members",
     priority: "Medium",
     dueDate: "2025-08-10",
-    status: "incomplete"
+    status: "drafting"
   },
 ];
 
